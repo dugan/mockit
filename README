@@ -25,26 +25,26 @@ class Foo(object):
     def method(self, param):
         # this method is enabled by calling _mock.enableMethod
         param.bar('print some data')
-        self.printMe('some other data', self.one)
+        self.print_me('some other data', self.one)
         return self.two
 
-    def printMe(self, otherParam):
+    def print_me(self, other_param):
         # this method is not enabled and so is stubbed out in the MockInstance.
-        print otherParam
+        print other_param
 
 def test():
     m = MockInstance(Foo)
-    m._mock.set(two=123)
-    m._mock.enableMethod('method')
+    m._mock.raw.two = 123
+    m._mock.enable_method('method')
     param = MockObject()
     rv = m.method(param)
     assert(rv == 123) #m.two is returned
     # note that param.bar is created on the fly as it is accessed, and 
     # stores how it was called.
-    assert(param.bar._mock.assertCalled('print some data')
-    # m.one and m.printMe were created on the fly as well
-    # m.printMe remembers how it was called.
-    m.printMe._mock.assertCalled('some other data', m.one)
+    assert(param.bar._mock.record.assert_called('print some data')
+    # m.one and m.print_me were created on the fly as well
+    # m.print_me remembers how it was called.
+    m.print_me._mock.assert_called('some other data', m.one)
     # attribute values are generated on the fly but are retained between
     # accesses.
     assert(m.foo is m.foo)
