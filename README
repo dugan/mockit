@@ -1,0 +1,50 @@
+Mock object implementation.
+
+This mock object implementation is meant to be very forgiving - it returns a
+new child Mock Object for every attribute accessed, and a mock object is
+returned from every method call.
+
+It is the tester's job to enable the calls that they are interested in
+testing, all calls where the return value of the call and side effects are not
+recorded (logging, for example) are likely to succeed w/o effort.
+
+If you wish to call the actual implementation of a function on a MockObject,
+you have to enable it using enableMethod.  If you wish to use an actual
+variable setting, you need to set it.
+
+All enabling/checking methods for a MockObject are done through the _mock
+attribute.  Example:
+
+class Foo(object):
+    def __init__(self):
+        # NOTE: this initialization is not called by default with the mock
+        # object.
+        self.one = 'a'
+        self.two = 'b'
+
+    def method(self, param):
+        # this method is enabled by calling _mock.enableMethod
+        param.bar('print some data')
+        self.printMe('some other data', self.one)
+        return self.two
+
+    def printMe(self, otherParam):
+        # this method is not enabled and so is stubbed out in the MockInstance.
+        print otherParam
+
+def test():
+    m = MockInstance(Foo)
+    m._mock.set(two=123)
+    m._mock.enableMethod('method')
+    param = MockObject()
+    rv = m.method(param)
+    assert(rv == 123) #m.two is returned
+    # note that param.bar is created on the fly as it is accessed, and 
+    # stores how it was called.
+    assert(param.bar._mock.assertCalled('print some data')
+    # m.one and m.printMe were created on the fly as well
+    # m.printMe remembers how it was called.
+    m.printMe._mock.assertCalled('some other data', m.one)
+    # attribute values are generated on the fly but are retained between
+    # accesses.
+    assert(m.foo is m.foo)
