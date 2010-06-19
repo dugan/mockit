@@ -105,28 +105,28 @@ class MockitTestCase(unittest.TestCase):
             assert(str(e) == 'accessing method %r also defined in mock object - prepend'
                              ' _mock to access, or enable attribute' % ('raise_error_on_access', ))
 
-    def test_stats(self):
+    def test_record(self):
         m = mockit.MockObject()
-        m.foo._mock.stats.assert_no_calls()
+        m.foo._mock.record.assert_no_calls()
         try:
-            m.foo._mock.stats.assert_called('a', b='c', d='e')
+            m.foo._mock.record.assert_called('a', b='c', d='e')
             assert(0)
         except AssertionError, e:
             self.assertEquals(str(e), "expected call arguments to be ('a', b='c', d='e'), got no calls")
 
         m.foo('a', b='c', d='e')
-        m.foo._mock.stats.assert_called('a', b='c', d='e')
+        m.foo._mock.record.assert_called('a', b='c', d='e')
         try:
-            m.foo._mock.stats.assert_called('a', b='1', d='2')
+            m.foo._mock.record.assert_called('a', b='1', d='2')
             assert(0)
         except AssertionError, e:
             self.assertEquals(str(e), "expected call arguments to be ('a', b='1', d='2'), got ('a', b='c', d='e')")
         try:
-            m.foo._mock.stats.assert_no_calls()
+            m.foo._mock.record.assert_no_calls()
             assert(0)
         except AssertionError, e:
             assert(str(e) == 'Invalid assertion: 1 call(s) made')
-        call = m.foo._mock.stats.pop_call()
+        call = m.foo._mock.record.pop_call()
         self.assertEquals(call.args, ('a',))
         self.assertEquals(call.kwargs, (('b','c'), ('d', 'e')))
 
@@ -169,10 +169,10 @@ class MockitTestCase(unittest.TestCase):
         self.assertEquals(rv, 123) #m.two is returned
         # note that param.bar is created on the fly as it is accessed, and 
         # stores how it was called.
-        param.bar._mock.stats.assert_called('print some data')
+        param.bar._mock.record.assert_called('print some data')
         # m.one and m.print_me were created on the fly as well
         # m.print_me remembers how it was called.
-        m.print_me._mock.stats.assert_called('some other data', m.one)
+        m.print_me._mock.record.assert_called('some other data', m.one)
         # attribute values are generated on the fly but are retained between
         # accesses.
         assert(m.foo is m.foo)

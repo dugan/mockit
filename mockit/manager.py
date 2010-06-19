@@ -15,7 +15,7 @@ class MockObjectManager(object):
     NO_VALUE = _NO_VALUE
 
     def __init__(self, mock_object, default_return_value=NO_VALUE):
-        self.stats = MockObjectStats()
+        self.record = MockObjectRecord()
 
         self._return_values = []
 
@@ -54,17 +54,17 @@ class MockObjectManager(object):
             raise err
 
     def set_item(self, key, value):
-        self.stats.add_action('setitem', key, value)
+        self.record.add_action('setitem', key, value)
         self._check_error()
         return self.raw_dict.setdefault(key, self.new_mock())
 
     def get_item(self, key):
-        self.stats.add_action('getitem', key)
+        self.record.add_action('getitem', key)
         self._check_error()
         return self.raw_dict.setdefault(key, self.new_mock())
 
     def set_attr(self, key, value):
-        self.stats.add_action('setattr', key, value)
+        self.record.add_action('setattr', key, value)
         self._check_error()
         return self.raw.__dict__.setdefault(key, self.new_mock())
     
@@ -72,13 +72,13 @@ class MockObjectManager(object):
         if key in self.__class__.__dict__:
             raise RuntimeError('accessing method %r also defined in mock'
                 ' object - prepend _mock to access, or enable attribute' % key)
-        self.stats.add_action('getattr', key)
+        self.record.add_action('getattr', key)
         self._check_error()
         return self.raw.__dict__.setdefault(key, self.new_mock())
 
     def call(self, *args, **kwargs):
         call = Call(*args, **kwargs)
-        self.stats.add_action('call', *args, **kwargs)
+        self.record.add_action('call', *args, **kwargs)
         self._check_error()
         return_value = [ x[1] for x in self._return_values if x[0] == call ]
         if return_value:
@@ -99,7 +99,7 @@ class RawObject(object):
         self.__dict__ = mock_object.__dict__
 
 
-class MockObjectStats(object):
+class MockObjectRecord(object):
     def __init__(self):
         self.actions = {'setitem' : [],
                         'getitem' : [],
